@@ -40,6 +40,9 @@
         1. Set _relativeTimeFormat_.[[Numeric]] to _numeric_.
         1. Let _relativeTimeFormat_.[[NumberFormat]] be ! Construct(%NumberFormat%, « _locale_ »).
         1. Let _relativeTimeFormat_.[[PluralRules]] be ! Construct(%PluralRules%, « _locale_ »).
+        1. Let _lfOptions_ be ? ObjectCreate(*null*).
+        1. Perform ! CreateDataPropertyOrThrow(_lfOptions_, *"style"*, _s_).
+        1. Set _relativeTimeFormat_.[[ListFormat]] to ! Construct(%ListFormat%, « _locale_, _lfOptions_ »).
         1. Return _relativeTimeFormat_.
       </emu-alg>
     </emu-clause>
@@ -105,6 +108,87 @@
       </emu-alg>
     </emu-clause>
 
+    <emu-clause id="sec-PartitionRelativeTimePatternDuration" aoid="PartitionRelativeTimePatternDuration">
+      <h1>PartitionRelativeTimePatternDuration ( _relativeTimeFormat_, _duration_ )</h1>
+
+      <p>
+        TODO
+      </p>
+
+      <emu-alg>
+        1. Assert: _relativeTimeFormat_ has an [[InitializedRelativeTimeFormat]] internal slot.
+        1. Assert: Type(_duration_) is Object.
+        1. Assert: _duration_ has an [[InitializedTemporalDuration]] internal slot.
+        1. Let _localeData_ be %RelativeTimeFormat%.[[LocaleData]].
+        1. Let _dataLocale_ be _relativeTimeFormat_.[[DataLocale]].
+        1. Let _patterns_ be _localeData_.[[&lt;_dataLocale_&gt;]].[[duration]].
+        1. Let _sign_ be ! DurationSign(_duration_.[[Years]], _duration_.[[Months]], _duration_.[[Weeks]], _duration_.[[Days]], _duration_.[[Hours]], _duration_.[[Minutes]], _duration_.[[Seconds]], _duration_.[[Milliseconds]], _duration_.[[Microseconds]], _duration_.[[Nanoseconds]]).
+        1. If _sign_ is −1, then
+          1. Let _tl_ be *"past"*.
+        1. Else,
+          1. Assert: _sign_ is 0 or 1.
+          1. Let _tl_ be *"future"*.
+        1. Let _po_ be _patterns_.[[&lt;_tl_&gt;]].
+        1. Let _listParts_ be ! PartitionDurationPattern(_duration_, _dataLocale_, _relativeTimeFormat_.[[NumberFormat]], _relativeTimeFormat_.[[PluralRules]], _relativeTimeFormat_.[[ListFormat]]).
+        1. Let _placeables_ be the Record { [[0]]: _listParts_ }.
+        1. Return ! DeconstructPattern(_po_, _placeables_).
+      </emu-alg>
+
+      <emu-table id="table-temporalduration-properties">
+        <emu-caption>Properties of a Temporal.Duration object</emu-caption>
+        <table class="real-table">
+          <thead>
+            <tr>
+              <th>Internal Slot</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>[[Years]]</td>
+              <td>*"year"*</td>
+            </tr>
+            <tr>
+              <td>[[Months]]</td>
+              <td>*"month"*</td>
+            </tr>
+            <tr>
+              <td>[[Weeks]]</td>
+              <td>*"week"*</td>
+            </tr>
+            <tr>
+              <td>[[Days]]</td>
+              <td>*"day"*</td>
+            </tr>
+            <tr>
+              <td>[[Hours]]</td>
+              <td>*"hour"*</td>
+            </tr>
+            <tr>
+              <td>[[Minutes]]</td>
+              <td>*"minute"*</td>
+            </tr>
+            <tr>
+              <td>[[Seconds]]</td>
+              <td>*"second"*</td>
+            </tr>
+            <tr>
+              <td>[[Milliseconds]]</td>
+              <td>*"millisecond"*</td>
+            </tr>
+            <tr>
+              <td>[[Microseconds]]</td>
+              <td>*"microsecond"*</td>
+            </tr>
+            <tr>
+              <td>[[Nanoseconds]]</td>
+              <td>*"nanosecond"*</td>
+            </tr>
+          </tbody>
+        </table>
+      </emu-table>
+    </emu-clause>
+
     <emu-clause id="sec-makepartslist" aoid="MakePartsList">
       <h1>MakePartsList ( _pattern_, _unit_, _parts_ )</h1>
 
@@ -156,6 +240,24 @@
       </emu-alg>
     </emu-clause>
 
+    <emu-clause id="sec-FormatRelativeTimeDuration" aoid="FormatRelativeTimeDuration">
+      <h1>FormatRelativeTimeDuration ( _relativeTimeFormat_, _duration_ )</h1>
+
+      <p>
+        TODO.
+      </p>
+
+      <emu-alg>
+        1. Let _parts_ be ? PartitionRelativeTimePatternDuration(_relativeTimeFormat_, _duration_).
+        1. Let _result_ be an empty String.
+        1. For each Record _part_ in _parts_, do
+          1. Set _result_ to the string-concatenation of _result_ and _part_.[[Value]].
+        1. Return _result_.
+      </emu-alg>
+
+      <p><mark>TODO: This is repeated everywhere.</mark></p>
+    </emu-clause>
+
     <emu-clause id="sec-FormatRelativeTimeToParts" aoid="FormatRelativeTimeToParts">
       <h1>FormatRelativeTimeToParts ( _relativeTimeFormat_, _value_, _unit_ )</h1>
 
@@ -178,6 +280,30 @@
         1. Return _result_.
       </emu-alg>
     </emu-clause>
+
+    <emu-clause id="sec-FormatRelativeTimeToPartsDuration" aoid="FormatRelativeTimeToPartsDuration">
+      <h1>FormatRelativeTimeToPartsDuration ( _relativeTimeFormat_, _duration_ )</h1>
+
+      <p>
+        TODO.
+      </p>
+
+      <emu-alg>
+        1. Let _parts_ be ? PartitionRelativeTimePatternDuration(_relativeTimeFormat_, _duration_).
+        1. Let _result_ be ArrayCreate(0).
+        1. Let _n_ be 0.
+        1. For each Record _part_ in _parts_, do
+          1. Let _O_ be ObjectCreate(%Object.prototype%).
+          1. Perform ! CreateDataPropertyOrThrow(_O_, *"type"*, _part_.[[Type]]).
+          1. Perform ! CreateDataPropertyOrThrow(_O_, *"value"*, _part_.[[Value]]).
+          1. If _part_ has a [[Unit]] field, then
+            1. Perform ! CreateDataPropertyOrThrow(_O_, *"unit"*, _part_.[[Unit]]).
+          1. Perform ! CreateDataPropertyOrThrow(_result_, ! ToString(_n_), _O_).
+          1. <mark>TODO: check if any others are needed.</mark>
+          1. Increment _n_ by 1.
+        1. Return _result_.
+      </emu-alg>
+    </emu-clause>
   </emu-clause>
 
   <emu-clause id="sec-intl-relativetimeformat-constructor">
@@ -196,7 +322,7 @@
 
       <emu-alg>
         1. If NewTarget is *undefined*, throw a *TypeError* exception.
-        1. Let _relativeTimeFormat_ be ? OrdinaryCreateFromConstructor(NewTarget, *"%RelativeTimeFormat.prototype%"*, « [[InitializedRelativeTimeFormat]], [[Locale]], [[DataLocale]], [[Style]], [[Numeric]], [[NumberFormat]], [[NumberingSystem]], [[PluralRules]] »).
+        1. Let _relativeTimeFormat_ be ? OrdinaryCreateFromConstructor(NewTarget, *"%RelativeTimeFormat.prototype%"*, « [[InitializedRelativeTimeFormat]], [[Locale]], [[DataLocale]], [[Style]], [[Numeric]], [[NumberFormat]], [[NumberingSystem]], [[PluralRules]], [[ListFormat]] »).
         1. Return ? InitializeRelativeTimeFormat(_relativeTimeFormat_, _locales_, _options_).
       </emu-alg>
     </emu-clause>
@@ -258,10 +384,10 @@
       </p>
 
       <ul>
-        <li>[[LocaleData]][&lt;_locale_&gt;] has fields *"second"*, *"minute"*, *"hour"*, *"day"*, *"week"*, *"month"*, *"quarter"*, and *"year"*. Additional fields may exist with the previous names concatenated with the strings *"-narrow"* or *"-short"*. The values corresponding to these fields are Records which contain these two categories of fields:
+        <li>[[LocaleData]][&lt;_locale_&gt;] has fields *"second"*, *"minute"*, *"hour"*, *"day"*, *"week"*, *"month"*, *"quarter"*, *"year"*, and *"duration"*. Additional fields may exist with the previous names concatenated with the strings *"-narrow"* or *"-short"*. The values corresponding to these fields are Records which contain these two categories of fields:
         <ul>
-        <li>*"future"* and *"past"* fields, which are Records with a field for each of the plural categories relevant for _locale_. The value corresponding to those fields is a pattern which may contain *"{0}"* to be replaced by a formatted number.</li>
-        <li>Optionally, additional fields whose key is the result of ToString of a Number, and whose values are literal Strings which are not treated as templates.</li>
+        <li>*"future"* and *"past"* fields, which are Records with a field for each of the plural categories relevant for _locale_. The value corresponding to those fields is a pattern which may contain *"{0}"* to be replaced by a formatted number, or in the *"duration"* case, by a formatted duration.</li>
+        <li>Optionally, but not in the *"duration"* case, additional fields whose key is the result of ToString of a Number, and whose values are literal Strings which are not treated as templates.</li>
         </ul>
         </li>
         <li>
@@ -311,6 +437,9 @@
       <emu-alg>
         1. Let _relativeTimeFormat_ be the *this* value.
         1. Perform ? RequireInternalSlot(_relativeTimeFormat_, [[InitializedRelativeTimeFormat]]).
+        1. If _unit_ is *undefined*, then
+          1. Let _duration_ be ? ToTemporalDuration(_value_).
+          1. Return ? FormatRelativeTimeDuration(_relativeTimeFormat_, _duration_).
         1. Let _value_ be ? ToNumber(_value_).
         1. Let _unit_ be ? ToString(_unit_).
         1. Return ? FormatRelativeTime(_relativeTimeFormat_, _value_, _unit_).
@@ -327,6 +456,9 @@
       <emu-alg>
         1. Let _relativeTimeFormat_ be the *this* value.
         1. Perform ? RequireInternalSlot(_relativeTimeFormat_, [[InitializedRelativeTimeFormat]]).
+        1. If _unit_ is *undefined*, then
+          1. Let _duration_ be ? ToTemporalDuration(_value_).
+          1. Return ? FormatRelativeTimeToPartsDuration(_relativeTimeFormat_, _duration_).
         1. Let _value_ be ? ToNumber(_value_).
         1. Let _unit_ be ? ToString(_unit_).
         1. Return ? FormatRelativeTimeToParts(_relativeTimeFormat_, _value_, _unit_).
